@@ -21,7 +21,7 @@ typedef union s_eident
 
 typedef struct s_fileinfo32
 {
-	t_eident *e_ident;
+//	t_eident *e_ident;
 	short	 e_type;
 	short	 e_machine;
 	int		 e_version;
@@ -39,22 +39,23 @@ typedef struct s_fileinfo32
 
 typedef struct s_fileinfo64
 {
-	union {
-		unsigned char   e_ident[16];
-		struct
-		{
-			char	EI_MAG0;
-			char	EI_MAG1;
-			char	EI_MAG2;
-			char	EI_MAG3;
-			char	EI_CLASS;
-			char	EI_DATA;
-			char	EI_VERSION;
-			char	EI_OSABI;
-			char	EI_ABIVERSION;
-			char	EI_PAD[7];
-		};
-	};
+//	union {
+//		unsigned char   e_ident[16];
+//		struct
+//		{
+//			char	EI_MAG0;
+//			char	EI_MAG1;
+//			char	EI_MAG2;
+//			char	EI_MAG3;
+//			char	EI_CLASS;
+//			char	EI_DATA;
+//			char	EI_VERSION;
+//			char	EI_OSABI;
+//			char	EI_ABIVERSION;
+//			char	EI_PAD[7];
+//		};
+//	};
+//	t_eident *e_ident;
 
 	short	e_type;
 	short	e_machine;
@@ -118,5 +119,29 @@ typedef struct t_secinfo64 {
 	long	sh_addralign;
 	long	sh_entsize;
 }	t_secinfo64;
+
+typedef struct s_Elf32_Sym {
+	int				st_name;
+	int				st_value;
+	int				st_size;
+	unsigned char	st_info;
+	unsigned char	st_other;
+	short			st_shndx;
+} t_Elf32_Sym;
+
+typedef struct s_Elf64_Sym {
+	int				st_name;
+	unsigned char	st_info;
+	unsigned char	st_other;
+	short			st_shndx;
+	long			st_value;
+	long			st_size;
+} t_Elf64_Sym;
+
+typedef struct s_name_table {
+	char	*name;
+	char	value[16];
+	char	type;
+} t_name_table;
 
 #endif

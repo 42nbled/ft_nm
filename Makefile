@@ -2,9 +2,7 @@ NAME = ft_nm
 
 OBJ_DIR = objs
 
-SRCS = main.c \
-	read_unit.c \
-	init_file.c
+SRCS = main.c
 
 OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRCS))
 
