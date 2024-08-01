@@ -4,8 +4,16 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <strings.h>
+#include <string.h>
 #include "ft_nm.h"
 
+#define ELF32_ST_BIND(i)   ((i)>>4)
+#define ELF32_ST_TYPE(i)   ((i)&0xf)
+#define ELF32_ST_INFO(b,t) (((b)<<4)+((t)&0xf))
+
+#define ELF64_ST_BIND(i)   ((i)>>4)
+#define ELF64_ST_TYPE(i)   ((i)&0xf)
+#define ELF64_ST_INFO(b,t) (((b)<<4)+((t)&0xf))
 
 struct s_pair {
 	t_Elf64_Sym	*symtable;
@@ -32,6 +40,7 @@ void	lst_append(t_lst *root, t_name_table *table)
 	if (!last->next)
 		assert(0 && "TODO: free all and exit");
 	last->next->data = table;
+	last->next->next = NULL;
 }
 
 void	lst_clear(t_lst *root)
@@ -65,25 +74,87 @@ t_secinfo64	*get_section_headers(int fd, t_fileinfo64 file_header)
 	return (lst);
 }
 
-struct s_pair	get_pair(int fd, t_secinfo64 symh, t_secinfo64 *sections)
+t_Elf64_Sym	*read_symtable(int fd, t_secinfo64 symh)
 {
-	t_secinfo64 strh = sections[symh.sh_link];
 	t_Elf64_Sym	*symtable = malloc(symh.sh_size);
-	char	*strtable = malloc(strh.sh_size);
-	if (!symtable || !strtable)
+	if (!symtable)
 		assert(0 && "TODO: free all and exit");
 	lseek(fd, symh.sh_offset, SEEK_SET);
 	read(fd, symtable, symh.sh_size);
-
-	lseek(fd, strh.sh_offset, SEEK_SET);
-	read(fd, strtable, strh.sh_size);
-
-	struct s_pair	p = {symtable, strtable};
-	return (p);
+	return (symtable);
 }
 
+char	*read_strtable(int fd, t_secinfo64 strh)
+{
+	char	*strtable = malloc(strh.sh_size);
+	if (!strtable)
+		assert(0 && "TODO: free all and exit");
+	lseek(fd, strh.sh_offset, SEEK_SET);
+	read(fd, strtable, strh.sh_size);
+	return (strtable);
+}
+
+char	get_symbol_type(char *secname, int bind, int type, unsigned long addr)
+{
+	char	*names = 
+		".bss\0b\0"
+		".text\0t\0"
+		".init\0t\0"
+		".fini\0t\0"
+		".data\0d\0"
+		".got.plt\0d\0"
+		".init_array\0d\0"
+		".dynamic\0d\0"
+		".fini_array\0d\0"
+		".rodata\0r\0"
+		".eh_frame\0r\0"
+		".eh_frame_hdr\0r\0"
+		".gcc_except_table\0r\0"
+		".interp\0r\0";
+
+	if (bind == STB_WEAK)
+	{
+		if (type == STT_FUNC || type == STT_NOTYPE) {
+			if (addr != 0)
+				return 'W';
+			if (!addr)
+				return 'w';
+		} else if (type == STT_OBJECT) {
+			if (addr != 0)
+				return 'V';
+			if (!addr)
+				return 'v';
+		}
+	}
+	int	c = '.';
+	if (!*secname)
+		c = 'u';
+	else
+	{
+		for (int i=0, j=0; i < 15; i++) {
+			if (!strcmp(secname, names + j))
+			{
+				c = names[j + strlen(names + j) + 1];
+				break ;
+			}
+			j += strlen(names + j) + 1 + 2;
+		}
+	}
+	if (bind == STB_LOCAL)
+		return c;
+	else if (bind == STB_GLOBAL)
+		return '_' & c; // '_' & 'n' <=> uppercase(n), also ' ' | 'N' <=> lowercase(n)
+	return ' ';
+}
+
+//int	main()
+//{
+//	printf("%c\n",
+//		get_symbol_type(".interp", STB_GLOBAL, STT_OBJECT, 123));
+//
+//}
 // TODO: Parse all tables all at once
-t_name_table *parse_table(t_Elf64_Sym *symbol_table, char *stringtable, size_t size)
+t_name_table *parse_table(t_Elf64_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab)
 {
 	t_name_table *name_table = malloc(sizeof(t_name_table) * (size + 1));
 	if (!name_table)
@@ -92,70 +163,86 @@ t_name_table *parse_table(t_Elf64_Sym *symbol_table, char *stringtable, size_t s
 	{
 		name_table[i].name = &stringtable[symbol_table[i].st_name];
 		sprintf(name_table[i].value, "%#08lx", symbol_table[i].st_value);
+
+		name_table[i].type = get_symbol_type(
+				shstrtab + symbol_table[i].st_shndx,
+				ELF64_ST_BIND(symbol_table[i].st_info),
+				ELF64_ST_TYPE(symbol_table[i].st_info),
+				symbol_table[i].st_value);
 	}
 	name_table[size].name = NULL;
 	return (name_table);
 }
 
+
+void	run(int fd, t_fileinfo64 fileh, t_lst *root)
+{
+	static char		*names[1024] = {0};
+	static size_t	inames = 0;
+	t_secinfo64		section;
+
+	static size_t	i = 0;
+	static char	*strtab = NULL;
+	static t_secinfo64 *sections = NULL;
+
+	if (!sections)
+		sections = get_section_headers(fd, fileh);
+
+	if (!strtab)
+		strtab = read_strtable(fd, sections[fileh.e_shstrndx]);
+
+	if (i == (size_t)fileh.e_shnum)
+	{
+		free(strtab);
+		free(sections);
+		for (size_t j = 0; j < inames; j++)
+			free(names[j]);
+	}
+	section = sections[i];
+	if (section.sh_type == 0x02 || section.sh_type == 0x0B)
+	{
+
+		t_Elf64_Sym	*symtable = read_symtable(fd, section);
+		char		*strtable = read_strtable(fd, sections[section.sh_link]);
+		lst_append(root, parse_table(symtable,
+			 strtable,
+			 section.sh_size / sizeof(t_Elf64_Sym),
+			 strtab));
+		free(symtable);
+		names[inames++] = strtable;
+	}
+	i++;
+}
+
 int main(int argc, char **argv) {
+	int				fd;
+	t_eident		identifiers;
+	t_fileinfo64	file_header;
+	t_lst			name_tables = {.next=NULL, .data=NULL};
+
 	if (argc == 1) {
 		printf("Usage: %s [file]\n", argv[0]);
 		return (1);
 	}
-	int fd;
 	if ((fd = open(argv[1], O_RDONLY)) < 0) {
 		fprintf(stderr, "Error while opening the file.");
 		return (1);
 	}
 
-	t_eident identifiers;
-
 	read(fd, &identifiers, sizeof(identifiers));
 	if (identifiers.EI_CLASS == 1) {
 		assert(0 && "32 bits currently not supported.");
 	}
-	t_fileinfo64 file_header;
 	read(fd, &file_header, sizeof(t_fileinfo64));
-	t_secinfo64 *sections = get_section_headers(fd, file_header);
-	t_lst	name_tables = {0};
-
-	char	*names[1024] = {0};
-	size_t	index = 0;
 
 	for (int i=0; i < file_header.e_shnum; i++)
-	{
-		if (sections[i].sh_type == 0x02) {
-			struct s_pair p = get_pair(fd, sections[i], sections);
-			t_name_table *t = parse_table(p.symtable, p.strtable, sections[i].sh_size / sizeof(t_Elf64_Sym));
-			lst_append(&name_tables, t);
-////			printf("----- SYM SECTION -----\n");
-////			for (size_t j=0; t[j].name != NULL; j++)
-////				printf("%s _ %s\n", t[j].value, t[j].name);
-			free(p.symtable);
-			names[index++] = p.strtable;
-		}
-		if (sections[i].sh_type == 0x0B) {
-			struct s_pair p = get_pair(fd, sections[i], sections);
-			t_name_table *t = parse_table(p.symtable, p.strtable, sections[i].sh_size / sizeof(t_Elf64_Sym));
-			lst_append(&name_tables, t);
-//			printf("----- DYM SECTION -----\n");
-//			for (size_t j=0; t[j].name != NULL; j++)
-//				printf("%s _ %s\n", t[j].value, t[j].name);
-			free(p.symtable);
-			names[index++] = p.strtable;
-		}
-	}
+		run(fd, file_header, &name_tables);
+	
+	run(fd, file_header, &name_tables);
 	close(fd);
-
 	for (t_lst *l=name_tables.next; l != NULL; l=l->next)
-	{
 		for (size_t i=0; l->data[i].name != NULL; i++)
-			printf("%s _ %s\n", l->data[i].value, l->data[i].name);
-	}
+			printf("%s %c %s\n", l->data[i].value, l->data[i].type, l->data[i].name);
 
 	lst_clear(name_tables.next);
-
-	for (size_t i=0; i < index; i++)
-		free(names[i]);
-	free(sections);
 }
