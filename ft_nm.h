@@ -154,13 +154,13 @@ typedef struct s_Elf64_Sym {
 	unsigned char	st_info;
 	unsigned char	st_other;
 	short			st_shndx;
-	long			st_value;
-	long			st_size;
+	long long		st_value;
+	long long		st_size;
 } t_Elf64_Sym;
 
 typedef struct s_name_table {
 	char	*name;
-	char	value[16];
+	char	value[17];
 	char	type;
 } t_name_table;
 

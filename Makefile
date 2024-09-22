@@ -27,7 +27,7 @@ clean:
 
 fclean: clean
 	@echo "\033[0;34mCleaning executable...\033[0m"
-	rm -f $(NAME)
+	rm -f $(NAME) result_ft_nm.txt result_nm.txt
 	@echo "\033[0;32mCleaning done.\033[0m"
 
 re: fclean all
