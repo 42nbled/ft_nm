@@ -107,16 +107,7 @@ char	*read_strtable(int fd, t_secinfo64 strh)
 }
 
 char get_symbol_type(char *secname, int bind, int type, unsigned long addr, int sectype, unsigned long sh_flags) {
-    // Special handling for symbol tables
-    if (sectype == 0x02 || sectype == 0x0B)  // SHT_SYMTAB or SHT_DYNSYM
-        return 'L';
-
-    // Check if the symbol is in a writable section
-    if (sectype == 0x01 && (sh_flags & 0x02) && (sh_flags & 0x01))  // SHT_PROGBITS, SHF_ALLOC, SHF_WRITE
-        return 'D';
-
-    // Define section names and their corresponding symbol types
-    char *names =
+    const char *names =
         ".bss\0b\0"
         ".text\0t\0"
         ".init\0t\0"
@@ -141,44 +132,47 @@ char get_symbol_type(char *secname, int bind, int type, unsigned long addr, int 
         }
     }
 
-    char c = 'U';  // Default to undefined
+    // Default to undefined
+    char symbol_type = 'U';
     if (secname && *secname) {
-        c = '.';
-        for (int i = 0, j = 0; i < 15; i++) {
-            if (!strcmp(secname, names + j)) {
-                c = names[j + strlen(names + j) + 1];
+        for (const char *p = names; *p != '\0'; p += strlen(p) + 1) {
+            if (strcmp(secname, p) == 0) {
+                symbol_type = *(p + strlen(p) + 1);
                 break;
             }
-            j += strlen(names + j) + 1 + 2;
         }
     }
 
-    // Special case handling for function symbols and key sections
-    if (strcmp(secname, ".init") == 0 || strcmp(secname, ".fini") == 0 || strcmp(secname, ".start") == 0 || strcmp(secname, ".text") == 0) {
-        c = 'T';  // Text sections (executable code)
+    // Specific sections
+    if (strcmp(secname, ".text") == 0 || strcmp(secname, ".init") == 0 || strcmp(secname, ".fini") == 0) {
+        return (addr != 0) ? 'T' : 't';
     } else if (strcmp(secname, ".abi_tag") == 0) {
-        c = 'r';  // Read-only data section
+         return (addr != 0) ? 'U' : 'u';
     }
 
-    // Additional checks based on section type and flags
-    if (sectype == 0x08 && (sh_flags & 0x02) && (sh_flags & 0x01))  // SHT_NOBITS, SHF_ALLOC, SHF_WRITE
-        c = 'b';
-    else if (sectype == 0x01) {  // SHT_PROGBITS
-        if ((sh_flags & 0x02) && !(sh_flags & 0x01) && !(sh_flags & 0x10))  // SHF_ALLOC, !SHF_WRITE, !SHF_EXECINSTR
-            c = 'r';
-        else if ((sh_flags & 0x02) && (sh_flags & 0x01))  // SHF_ALLOC, SHF_WRITE
-            c = 'd';
-        else if ((sh_flags & 0x02) && (sh_flags & 0x10))  // SHF_ALLOC, SHF_EXECINSTR
-            c = 't';
+    // Additional checks
+    if (sectype == SHT_NOBITS && (sh_flags & SHF_ALLOC) && (sh_flags & SHF_WRITE)) {
+        symbol_type = 'b';
+    } else if (sectype == SHT_PROGBITS) {
+        if (sh_flags & SHF_ALLOC) {
+            if (sh_flags & SHF_WRITE) {
+                symbol_type = 'd';
+            } else if (sh_flags & SHF_EXECINSTR) {
+                symbol_type = 't';
+            } else {
+                symbol_type = 'r';
+            }
+        }
     }
 
-    // Handling global symbols (uppercase) and local symbols (lowercase)
-    if (bind == STB_GLOBAL)
-        return toupper(c);
-    else if (bind == STB_LOCAL)
-        return c;
+    // Handle global and local bindings
+    if (bind == STB_GLOBAL) {
+        return toupper(symbol_type);
+    } else if (bind == STB_LOCAL) {
+        return symbol_type;
+    }
 
-    return '?';  // Unknown type
+    return '?';
 }
 
 
