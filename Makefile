@@ -2,7 +2,8 @@ NAME = ft_nm
 
 OBJ_DIR = objs
 
-SRCS = main.c
+SRCS = main.c \
+		lst.c
 
 OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRCS))
 
@@ -27,7 +28,7 @@ clean:
 
 fclean: clean
 	@echo "\033[0;34mCleaning executable...\033[0m"
-	rm -f $(NAME) result_ft_nm.txt result_nm.txt
+	rm -f $(NAME) result_ft_nm.txt result_nm.txt a b
 	@echo "\033[0;32mCleaning done.\033[0m"
 
 re: fclean all

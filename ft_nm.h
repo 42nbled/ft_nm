@@ -1,6 +1,15 @@
 #ifndef FT_NM_H
 # define FT_NM_H
 
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <strings.h>
+#include <string.h>
+#include <ctype.h>
+
 # define	STB_LOCAL	0
 # define	STB_GLOBAL	1
 # define	STB_WEAK	2
@@ -20,6 +29,25 @@
 # define	STT_HIOS	12
 # define	STT_LOPROC	13
 # define	STT_HIPROC	15
+
+// Section types
+#define SHT_SYMTAB      2
+#define SHT_DYNSYM      11
+#define SHT_NOBITS      8
+#define SHT_PROGBITS    1
+
+// Section flags
+#define SHF_WRITE       (1 << 0)
+#define SHF_ALLOC       (1 << 1)
+#define SHF_EXECINSTR   (1 << 4)
+
+#define ELF32_ST_BIND(i)   ((i)>>4)
+#define ELF32_ST_TYPE(i)   ((i)&0xf)
+#define ELF32_ST_INFO(b,t) (((b)<<4)+((t)&0xf))
+
+#define ELF64_ST_BIND(i)   ((i)>>4)
+#define ELF64_ST_TYPE(i)   ((i)&0xf)
+#define ELF64_ST_INFO(b,t) (((b)<<4)+((t)&0xf))
 
 typedef union s_eident
 {
@@ -161,7 +189,38 @@ typedef struct s_Elf64_Sym {
 typedef struct s_name_table {
 	char	*name;
 	char	value[17];
+	int		i_value;
 	char	type;
 } t_name_table;
+
+struct s_pair {
+	t_Elf64_Sym	*symtable;
+	char		*strtable;
+};
+
+typedef struct s_lst {
+	struct s_lst	*next;
+	t_name_table	*data;
+} t_lst;
+
+
+typedef struct s_flags {
+	unsigned int	a : 1;
+	unsigned int	g : 1;
+	unsigned int	u : 1;
+	unsigned int	r : 1;
+	unsigned int	p : 1;
+} t_flags;
+
+// LST.C FUNCTION
+t_lst	*lst_last(t_lst *node);
+void	lst_append(t_lst *root, t_name_table *table);
+void	lst_clear(t_lst *root);
+int		lst_size(t_lst *node);
+int		diff_str(t_lst *a, t_lst *b);
+int		reverse_diff_str(t_lst *a, t_lst *b);
+void	ft_swap(t_lst **a, t_lst **b);
+void	ft_lst_swap(t_lst **header, t_lst *a, t_lst *b);
+void	ft_lst_sort(t_lst **begin_list, int (*cmp)());
 
 #endif
