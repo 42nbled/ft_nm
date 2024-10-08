@@ -57,7 +57,7 @@ int	reverse_diff_str(t_lst *b, t_lst *a) {
 		return 0;
 	int status = strcmp(a->data->name, b->data->name);
 	if (!status)
-		return (a->data->i_value - b->data->i_value);
+		return (b->data->i_value - a->data->i_value);
 	return (status);
 }
 
