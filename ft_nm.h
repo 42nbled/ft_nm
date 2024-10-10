@@ -189,8 +189,9 @@ typedef struct s_Elf64_Sym {
 typedef struct s_name_table {
 	char	*name;
 	char	value[17];
-	int		i_value;
 	char	type;
+	int		i_value;
+	int		stt_type;
 } t_name_table;
 
 struct s_pair {
@@ -222,5 +223,23 @@ int		reverse_diff_str(t_lst *a, t_lst *b);
 void	ft_swap(t_lst **a, t_lst **b);
 void	ft_lst_swap(t_lst **header, t_lst *a, t_lst *b);
 void	ft_lst_sort(t_lst **begin_list, int (*cmp)());
+
+// 32
+t_secinfo32	*get_section_headers_32(int fd, t_fileinfo32 file_header);
+t_Elf32_Sym	*read_symtable_32(int fd, t_secinfo32 symh);
+char		*read_strtable_32(int fd, t_secinfo32 strh);
+void		parse_table_32(t_lst *root, t_Elf32_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab, t_secinfo32 *sections);
+void		run_32(int fd, t_fileinfo32 fileh, t_lst *root);
+
+// 64
+t_secinfo64	*get_section_headers_64(int fd, t_fileinfo64 file_header);
+t_Elf64_Sym	*read_symtable_64(int fd, t_secinfo64 symh);
+char		*read_strtable_64(int fd, t_secinfo64 strh);
+void		parse_table_64(t_lst *root, t_Elf64_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab, t_secinfo64 *sections);
+void		run_64(int fd, t_fileinfo64 fileh, t_lst *root);
+
+char		get_symbol_type(char *secname, int bind, int type, unsigned long addr, short st_shndx);
+void		print_nm(t_lst name_tables, t_flags flags);
+void		arg_check(t_flags *flags, int argc, char **argv);
 
 #endif

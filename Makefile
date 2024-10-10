@@ -3,12 +3,14 @@ NAME = ft_nm
 OBJ_DIR = objs
 
 SRCS = main.c \
-		lst.c
+		lst.c \
+		parse_table_32b.c \
+		parse_table_64b.c
 
 OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -g -ggdb
+CFLAGS = -Wall -Wextra -Werror -g -ggdb #-32m
 
 $(NAME): $(OBJS)
 	@echo "\033[0;34mCompiling $(NAME)...\033[0m"

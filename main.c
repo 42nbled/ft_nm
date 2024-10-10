@@ -1,36 +1,5 @@
 #include "ft_nm.h"
 
-t_secinfo64	*get_section_headers(int fd, t_fileinfo64 file_header)
-{
-	t_secinfo64	*lst = malloc(sizeof(t_secinfo64) * file_header.e_shnum);
-	if (!lst)
-		assert(0 && "TODO: free all and exit");
-	lseek(fd, file_header.e_shoff, SEEK_SET);
-	for (int i=0; i < file_header.e_shnum; i++)
-		read(fd, &lst[i], sizeof(t_secinfo64));
-	return (lst);
-}
-
-t_Elf64_Sym	*read_symtable(int fd, t_secinfo64 symh)
-{
-	t_Elf64_Sym	*symtable = malloc(symh.sh_size);
-	if (!symtable)
-		assert(0 && "TODO: free all and exit");
-	lseek(fd, symh.sh_offset, SEEK_SET);
-	read(fd, symtable, symh.sh_size);
-	return (symtable);
-}
-
-char	*read_strtable(int fd, t_secinfo64 strh)
-{
-	char	*strtable = malloc(strh.sh_size);
-	if (!strtable)
-		assert(0 && "TODO: free all and exit");
-	lseek(fd, strh.sh_offset, SEEK_SET);
-	read(fd, strtable, strh.sh_size);
-	return (strtable);
-}
-
 char get_symbol_type(char *secname, int bind, int type, unsigned long addr, short st_shndx) {
 	const char *names =
 		".bss\0b\0"
@@ -82,76 +51,6 @@ char get_symbol_type(char *secname, int bind, int type, unsigned long addr, shor
 	return '?';
 }
 
-
-void parse_table(t_lst *root, t_Elf64_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab, t_secinfo64 *sections)
-{
-	for (size_t i = 1; i < size; i++)
-	{
-		t_name_table *t = malloc(sizeof(t_name_table));
-		if (!t)
-			assert(0 && "TODO: free all and exit");
-		t->name = strdup(&stringtable[symbol_table[i].st_name]);
-		sprintf(t->value, "%016llx", symbol_table[i].st_value);
-		t->i_value = symbol_table[i].st_value;
-
-		t->type = get_symbol_type(
-				shstrtab + (symbol_table[i].st_shndx > 0 ? sections[symbol_table[i].st_shndx].sh_name : 0),
-				ELF64_ST_BIND(symbol_table[i].st_info),
-				ELF64_ST_TYPE(symbol_table[i].st_info),
-				symbol_table[i].st_value,
-				symbol_table[i].st_shndx);
-		lst_append(root, t);
-	}
-}
-
-
-void run(int fd, t_fileinfo64 fileh, t_lst *root)
-{
-	static char     *names[1024] = {0};
-	static size_t   inames = 0;
-	static size_t   i = 0;
-	static char     *strtab = NULL;
-	static t_secinfo64 *sections = NULL;
-
-	if (!sections)
-		sections = get_section_headers(fd, fileh);
-
-	if (!strtab)
-		strtab = read_strtable(fd, sections[fileh.e_shstrndx]);
-
-	if (i < (size_t)fileh.e_shnum)
-	{
-		t_secinfo64 section = sections[i];
-		if (section.sh_type == SHT_SYMTAB)
-		{
-			t_Elf64_Sym *symtable = read_symtable(fd, section);
-			char        *strtable = read_strtable(fd, sections[section.sh_link]);
-			if (symtable && strtable)
-			{
-				parse_table(root, symtable, strtable, section.sh_size / sizeof(t_Elf64_Sym), strtab, sections);
-				free(symtable);
-				if (inames < 1024)
-					names[inames++] = strtable;
-				else
-					free(strtable);
-			}
-		}
-		i++;
-	}
-	else if (i == (size_t)fileh.e_shnum)
-	{
-		// Cleanup
-		free(strtab);
-		free(sections);
-		for (size_t j = 0; j < inames; j++)
-			free(names[j]);
-		strtab = NULL;
-		sections = NULL;
-		inames = 0;
-		i = 0;
-	}
-}
-
 void print_nm(t_lst name_tables, t_flags flags) {
 	t_lst **lst = &(name_tables.next);
 	if (name_tables.next) {
@@ -162,6 +61,9 @@ void print_nm(t_lst name_tables, t_flags flags) {
 				ft_lst_sort(lst, diff_str);
 		}
 		for (t_lst *l = *lst; l != NULL; l = l->next) {
+
+//			if (l->data->stt_type == STT_SECTION)
+//				TYPE == SECTION
 			if (l->data->type == 'a')
 			{
 				if (flags.a && !flags.g && !flags.u)
@@ -199,11 +101,36 @@ void	arg_check(t_flags *flags, int argc, char **argv) {
 	}
 }
 
+
+void	main_32(int fd, t_flags flags) {
+	t_fileinfo32	file_header;
+	t_lst			name_tables = {.next=NULL, .data=NULL};
+
+	read(fd, &file_header, sizeof(t_fileinfo32));
+	for (int i=0; i < file_header.e_shnum; i++)
+		run_32(fd, file_header, &name_tables);
+
+	run_32(fd, file_header, &name_tables);
+	close(fd);
+	print_nm(name_tables, flags);
+}
+
+void	main_64(int fd, t_flags flags) {
+	t_fileinfo64	file_header;
+	t_lst			name_tables = {.next=NULL, .data=NULL};
+
+	read(fd, &file_header, sizeof(t_fileinfo64));
+	for (int i=0; i < file_header.e_shnum; i++)
+		run_64(fd, file_header, &name_tables);
+
+	run_64(fd, file_header, &name_tables);
+	close(fd);
+	print_nm(name_tables, flags);
+}
+
 int main(int argc, char **argv) {
 	int				fd;
 	t_eident		identifiers;
-	t_fileinfo64	file_header;
-	t_lst			name_tables = {.next=NULL, .data=NULL};
 	t_flags			flags = {0};
 
 	if (argc == 1) {
@@ -215,17 +142,9 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Error while opening the file.");
 		return (1);
 	}
-
 	read(fd, &identifiers, sizeof(identifiers));
-	if (identifiers.EI_CLASS == 1) {
-		assert(0 && "32 bits currently not supported.");
-	}
-	read(fd, &file_header, sizeof(t_fileinfo64));
-
-	for (int i=0; i < file_header.e_shnum; i++)
-		run(fd, file_header, &name_tables);
-
-	run(fd, file_header, &name_tables);
-	close(fd);
-	print_nm(name_tables, flags);
+	if (identifiers.EI_CLASS == 1)
+		main_32(fd, flags);
+	else
+		main_64(fd, flags);
 }
