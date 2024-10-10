@@ -40,7 +40,11 @@ void parse_table_64(t_lst *root, t_Elf64_Sym *symbol_table, char *stringtable, s
 		t_name_table *t = malloc(sizeof(t_name_table));
 		if (!t)
 			assert(0 && "TODO: free all and exit");
-		t->name = strdup(&stringtable[symbol_table[i].st_name]);
+		t->stt_type = ELF64_ST_TYPE(symbol_table[i].st_info);
+		if (t->stt_type == STT_SECTION)
+			t->name = strdup(&shstrtab[sections[symbol_table[i].st_shndx].sh_name]);
+		else
+			t->name = strdup(&stringtable[symbol_table[i].st_name]);
 		sprintf(t->value, "%016llx", symbol_table[i].st_value);
 		t->i_value = symbol_table[i].st_value;
 
@@ -50,7 +54,6 @@ void parse_table_64(t_lst *root, t_Elf64_Sym *symbol_table, char *stringtable, s
 				ELF64_ST_TYPE(symbol_table[i].st_info),
 				symbol_table[i].st_value,
 				symbol_table[i].st_shndx);
-		t->stt_type =ELF64_ST_TYPE(symbol_table[i].st_info);
 		lst_append(root, t);
 	}
 }
