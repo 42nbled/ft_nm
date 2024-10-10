@@ -39,15 +39,51 @@ int	lst_size(t_lst *node)
 	return (1);
 }
 
+void	__test_function() {
+	return;
+}
+
+void	__testafunction() {
+	return;
+}
+
+void	__testAfunction() {
+	return;
+}
+
 int	diff_str(t_lst *a, t_lst *b) {
 	if (!a || !a->data)
 		return 0;
 	if (!b || !b->data)
 		return 0;
-	int status = strcmp(a->data->name, b->data->name);
-	if (!status)
-		return (a->data->i_value - b->data->i_value);
-	return (status);
+	char *c = strdup(a->data->name);
+	char *d = strdup(b->data->name);
+	int undescord_count_a = 0;
+	int undescord_count_b = 0;
+	for (int i = 0; c[i]; i++) {
+		c[i] = tolower(c[i]);
+	}
+	while (c && c[0] == '_') {
+		undescord_count_a++;
+		c++;
+	}
+	for (int i = 0; d[i]; i++) {
+		d[i] = tolower(d[i]);
+	}
+	while (d && d[0] == '_') {
+		undescord_count_b++;
+		d++;
+	}
+	int status = strcmp(c, d);
+	// if (c)
+	// 	free(c);
+	// if (d)
+	// 	free(d);
+	if (status != 0)
+		return status;
+	if (undescord_count_a != undescord_count_b)
+		return (undescord_count_b - undescord_count_a);
+	return (a->data->i_value - b->data->i_value);
 }
 
 int	reverse_diff_str(t_lst *b, t_lst *a) {
