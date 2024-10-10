@@ -51,7 +51,7 @@ char get_symbol_type(char *secname, int bind, int type, unsigned long addr, shor
 	return '?';
 }
 
-void print_nm(t_lst name_tables, t_flags flags) {
+void print_nm32(t_lst name_tables, t_flags flags) {
 	t_lst **lst = &(name_tables.next);
 	if (name_tables.next) {
 		if (!flags.p) {
@@ -62,6 +62,37 @@ void print_nm(t_lst name_tables, t_flags flags) {
 		}
 		for (t_lst *l = *lst; l != NULL; l = l->next) {
 
+//			if (l->data->stt_type == STT_SECTION)
+//				TYPE == SECTION
+			if (l->data->type == 'a')
+			{
+				if (flags.a && !flags.g && !flags.u)
+					printf("%s %c %s\n", l->data->value, l->data->type, l->data->name);
+			}
+			else if (l->data->type == 'w' || l->data->type == 'U')
+				printf("         %c %s\n", l->data->type, l->data->name);
+			else if (!flags.u && (l->data->type == 'w' || isupper(l->data->type)))
+				printf("%s %c %s\n", l->data->value, l->data->type, l->data->name);
+			else if (!flags.g && !flags.u)
+				printf("%s %c %s\n", l->data->value, l->data->type, l->data->name);
+		}
+	}
+	lst_clear(*lst);
+}
+
+void print_nm64(t_lst name_tables, t_flags flags) {
+	t_lst **lst = &(name_tables.next);
+	if (name_tables.next) {
+		if (!flags.p) {
+			if (flags.r)
+				ft_lst_sort(lst, reverse_diff_str);
+			else
+				ft_lst_sort(lst, diff_str);
+		}
+		for (t_lst *l = *lst; l != NULL; l = l->next) {
+			if (l->data->name[0] == '\0' && l->data->type != 'a' && !strcmp(l->data->value, "0000000000000000"))
+				continue;
+			
 //			if (l->data->stt_type == STT_SECTION)
 //				TYPE == SECTION
 			if (l->data->type == 'a')
@@ -112,7 +143,7 @@ void	main_32(int fd, t_flags flags) {
 
 	run_32(fd, file_header, &name_tables);
 	close(fd);
-	print_nm(name_tables, flags);
+	print_nm32(name_tables, flags);
 }
 
 void	main_64(int fd, t_flags flags) {
@@ -125,7 +156,7 @@ void	main_64(int fd, t_flags flags) {
 
 	run_64(fd, file_header, &name_tables);
 	close(fd);
-	print_nm(name_tables, flags);
+	print_nm64(name_tables, flags);
 }
 
 int main(int argc, char **argv) {

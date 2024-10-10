@@ -239,7 +239,8 @@ void		parse_table_64(t_lst *root, t_Elf64_Sym *symbol_table, char *stringtable, 
 void		run_64(int fd, t_fileinfo64 fileh, t_lst *root);
 
 char		get_symbol_type(char *secname, int bind, int type, unsigned long addr, short st_shndx);
-void		print_nm(t_lst name_tables, t_flags flags);
+void		print_nm32(t_lst name_tables, t_flags flags);
+void		print_nm64(t_lst name_tables, t_flags flags);
 void		arg_check(t_flags *flags, int argc, char **argv);
 
 #endif
