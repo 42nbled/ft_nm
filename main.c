@@ -30,7 +30,10 @@ char get_symbol_type(char *secname, int bind, int type, unsigned long addr, shor
 
 	// Default to undefined
 	char symbol_type = 'U';
+
 	if (secname && *secname) {
+		if (strncmp(secname, ".debug_", 7) == 0)
+			return 'N';
 		for (const char *p = names; *p != '\0'; p += strlen(p) + 1) {
 			if (strcmp(secname, p) == 0) {
 				symbol_type = *(p + strlen(p) + 1);
@@ -80,7 +83,7 @@ void print_nm32(t_lst name_tables, t_flags flags) {
 	lst_clear(*lst);
 }
 
-void print_nm64(t_lst name_tables, t_flags flags) {
+void print_nm64(t_lst name_tables, t_flags flags, char *executable_name) {
 	t_lst **lst = &(name_tables.next);
 	if (name_tables.next) {
 		if (!flags.p) {
@@ -90,6 +93,8 @@ void print_nm64(t_lst name_tables, t_flags flags) {
 				ft_lst_sort(lst, diff_str);
 		}
 		for (t_lst *l = *lst; l != NULL; l = l->next) {
+			if ((flags.g || flags.u) && l->data->name[0] == '.')
+				continue ;
 			if (l->data->stt_type == STT_SECTION)
 			{
 				if (flags.a)
@@ -112,10 +117,15 @@ void print_nm64(t_lst name_tables, t_flags flags) {
 				printf("%s %c %s\n", l->data->value, l->data->type, l->data->name);
 		}
 	}
+	else {
+		printf("ft_nm: %s no symbols\n", executable_name);
+	}
 	lst_clear(*lst);
 }
 
-void	arg_check(t_flags *flags, int argc, char **argv) {
+t_files	*arg_check(t_flags *flags, int argc, char **argv) {
+	t_files	*files = NULL;
+
 	for (int i = 1; i < argc; i++) {
 		if (argv[i][0] && argv[i][0] == '-') {
 			for (int y = 1; argv[i][y]; y++) {
@@ -133,7 +143,28 @@ void	arg_check(t_flags *flags, int argc, char **argv) {
 					assert(0 && "Unimplemented flag.");
 			}
 		}
+		else {
+			if (!files) {
+				files = malloc(sizeof(t_files));
+				files->name = argv[i];
+				files->next = NULL;
+			}
+			else {
+				t_files *tmp = files;
+				while (tmp->next)
+					tmp = tmp->next;
+				tmp->next = malloc(sizeof(t_files));
+				tmp->next->name = argv[i];
+				tmp->next->next = NULL;
+			}
+		}
 	}
+	if (!files) {
+		files = malloc(sizeof(t_files));
+		files->name = "a.out";
+		files->next = NULL;
+	}
+	return files;
 }
 
 
@@ -150,7 +181,7 @@ void	main_32(int fd, t_flags flags) {
 	print_nm32(name_tables, flags);
 }
 
-void	main_64(int fd, t_flags flags) {
+void	main_64(int fd, t_flags flags, char *executable_name) {
 	t_fileinfo64	file_header;
 	t_lst			name_tables = {.next=NULL, .data=NULL};
 
@@ -160,26 +191,36 @@ void	main_64(int fd, t_flags flags) {
 
 	run_64(fd, file_header, &name_tables);
 	close(fd);
-	print_nm64(name_tables, flags);
+	print_nm64(name_tables, flags, executable_name);
 }
 
 int main(int argc, char **argv) {
 	int				fd;
 	t_eident		identifiers;
 	t_flags			flags = {0};
+	t_files			*files;
 
 	if (argc == 1) {
 		printf("Usage: %s [-agurp] [file]\n", argv[0]);
 		return (1);
 	}
-	arg_check(&flags, argc, argv);
-	if ((fd = open(argv[1], O_RDONLY)) < 0) {
-		fprintf(stderr, "Error while opening the file.");
-		return (1);
+	files = arg_check(&flags, argc, argv);
+	int nfiles = 0;
+	for (t_files *tmp = files; tmp; tmp = tmp->next)
+		nfiles++;
+	while (files) {
+		if (nfiles > 1)
+			printf("\n%s:\n", files->name);
+		if ((fd = open(files->name, O_RDONLY)) < 0) {
+			fprintf(stderr, "Error while opening the file \'%s\'.", files->name);
+			return (1);
+		}
+		read(fd, &identifiers, sizeof(identifiers));
+		if (identifiers.EI_CLASS == 1)
+			main_32(fd, flags);
+		else
+			main_64(fd, flags, files->name);
+		files = files->next;
 	}
-	read(fd, &identifiers, sizeof(identifiers));
-	if (identifiers.EI_CLASS == 1)
-		main_32(fd, flags);
-	else
-		main_64(fd, flags);
+	return (0);
 }

@@ -10,7 +10,7 @@ SRCS = main.c \
 OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -g -ggdb #-32m
+CFLAGS = -Wall -Wextra -Werror # -g -ggdb #-32m
 
 $(NAME): $(OBJS)
 	@echo "\033[0;34mCompiling $(NAME)...\033[0m"

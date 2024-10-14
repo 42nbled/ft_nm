@@ -26,16 +26,10 @@ function run_all_tests {
     run_diff_test "-rp   "
     run_diff_test "-pa   "
     run_diff_test "-pg   "
-    run_diff_test "-pr   "
     run_diff_test "-pu   "
     run_diff_test "-ag   "
-    run_diff_test "-ar   "
     run_diff_test "-au   "
-    run_diff_test "-ap   "
-    run_diff_test "-ga   "
-    run_diff_test "-gr   "
     run_diff_test "-gu   "
-    run_diff_test "-gp   "
     echo ''
 
     run_diff_test "-arg  "
@@ -44,31 +38,11 @@ function run_all_tests {
     run_diff_test "-agu  "
     run_diff_test "-agp  "
     run_diff_test "-aup  "
-    run_diff_test "-rag  "
-    run_diff_test "-rau  "
-    run_diff_test "-rap  "
     run_diff_test "-rgu  "
     run_diff_test "-rgp  "
     run_diff_test "-rup  "
-    run_diff_test "-gar  "
-    run_diff_test "-gau  "
-    run_diff_test "-gap  "
-    run_diff_test "-gru  "
-    run_diff_test "-grp  "
     run_diff_test "-gup  "
-    run_diff_test "-uar  "
-    run_diff_test "-uag  "
-    run_diff_test "-uap  "
-    run_diff_test "-urg  "
-    run_diff_test "-urp  "
-    run_diff_test "-ugp  "
-    run_diff_test "-par  "
-    run_diff_test "-pag  "
-    run_diff_test "-pau  "
-    run_diff_test "-prg  "
-    run_diff_test "-pru  "
-    run_diff_test "-pgu  "
-    echo ''
+
 
     run_diff_test "-gurp "
     run_diff_test "-aurp "
@@ -83,5 +57,6 @@ function run_all_tests {
 }
 
 run_all_tests "ft_nm"
+run_all_tests "objs/lst.o"
 
 for i in tests_binaries/*; do run_all_tests $i; done

@@ -204,6 +204,10 @@ typedef struct s_lst {
 	t_name_table	*data;
 } t_lst;
 
+typedef struct s_files {
+	struct s_files	*next;
+	char			*name;
+} t_files;
 
 typedef struct s_flags {
 	unsigned int	a : 1;
@@ -240,7 +244,7 @@ void		run_64(int fd, t_fileinfo64 fileh, t_lst *root);
 
 char		get_symbol_type(char *secname, int bind, int type, unsigned long addr, short st_shndx);
 void		print_nm32(t_lst name_tables, t_flags flags);
-void		print_nm64(t_lst name_tables, t_flags flags);
-void		arg_check(t_flags *flags, int argc, char **argv);
+void		print_nm64(t_lst name_tables, t_flags flags, char *executable_name);
+t_files		*arg_check(t_flags *flags, int argc, char **argv);
 
 #endif

@@ -104,6 +104,10 @@ void	mainb() {
 	return;
 }
 
+void	maind() {
+	return;
+}
+
 
 char	*remove_underscore(char *str) {
 
