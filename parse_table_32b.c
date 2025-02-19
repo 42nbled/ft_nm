@@ -52,7 +52,6 @@ void parse_table_32(t_lst *root, t_Elf32_Sym *symbol_table, char *stringtable, s
 	}
 }
 
-
 void run_32(int fd, t_fileinfo32 fileh, t_lst *root)
 {
 	static char     *names[1024] = {0};

@@ -108,7 +108,6 @@ void	maind() {
 	return;
 }
 
-
 char	*remove_underscore(char *str) {
 
 	size_t len = 0;
@@ -134,77 +133,70 @@ char	*remove_underscore(char *str) {
 
 }
 
-int	diff_str(t_lst *a, t_lst *b) {
-	if (!a || !a->data)
-		return 0;
-	if (!b || !b->data)
-		return 0;
-	char *c = strdup(a->data->name);
-	char *d = strdup(b->data->name);
-	int underscore_count_a_start = 0;
-	int underscore_count_b_start = 0;
-	int underscore_count_a_middle = 0;
-	int underscore_count_b_middle = 0;
-	int underscore_count_a_end = 0;
-	int underscore_count_b_end = 0;
+int count_start_underscores(char **str) {
+	int count = 0;
+	while (**str == '_') {
+		count++;
+		(*str)++;
+	}
+	return count;
+}
 
-	for (int i = 0; c[i]; i++) {
+int count_middle_underscores(const char *str) {
+	int count = 0;
+	for (int i = 0; str[i]; i++) {
+		if (str[i] == '_')
+			count++;
+	}
+	return count;
+}
+
+int count_end_underscores(char *str) {
+	int count = 0;
+	size_t len = strlen(str);
+
+	for (int i = len - 1; i >= 0 && str[i] == '_'; i--) {
+		count++;
+		str[i] = '\0';
+	}
+	return count;
+}
+
+int diff_str(t_lst *a, t_lst *b) {
+	if (!a || !a->data) return 0;
+	if (!b || !b->data) return 0;
+
+	char *c_orig = strdup(a->data->name);
+	char *d_orig = strdup(b->data->name);
+	if (!c_orig || !d_orig) {
+		free(c_orig);
+		free(d_orig);
+		return 0;
+	}
+
+	char *c = c_orig;
+	char *d = d_orig;
+
+	for (int i = 0; c[i]; i++)
 		c[i] = tolower(c[i]);
-	}
-
-	// COUNT STARTING UNDERSCORES
-
-	while (c && c[0] == '_') {
-		underscore_count_a_start++;
-		c++;
-	}
-
-	while (d && d[0] == '_') {
-		underscore_count_b_start++;
-		d++;
-	}
-
-	// COUNT ENDING UNDERSCORES
-
-	for (int i = strlen(c) -1; c[i] && c[i] == '_'; i--) {
-		underscore_count_a_end++;
-		c[i] = '\0';
-	}
-
-	for (int i = strlen(d) -1; d[i] && d[i] == '_'; i--) {
-		underscore_count_b_end++;
-		d[i] = '\0';
-	}
-
-	// printf("c: %s, d: %s\n", c, d);
-
-	// COUNT MIDDLE UNDERSCORES
-
-	for (int i = 0; c[i]; i++) {
-		if (c[i] == '_' )
-			underscore_count_a_middle++;
-	}
-	for (int i = 0; d[i]; i++) {
-		if (d[i] == '_')
-			underscore_count_b_middle++;
-	}
-
-	// end count
-
-	for (int i = 0; d[i]; i++) {
+	for (int i = 0; d[i]; i++)
 		d[i] = tolower(d[i]);
-	}
 
-	c = remove_underscore(c);
-	d = remove_underscore(d);
-	int status = strcmp(c, d);
-	// if (c)
-	// 	free(c);
-	// if (d)
-	// 	free(d);
+	int underscore_count_a_start = count_start_underscores(&c);
+	int underscore_count_b_start = count_start_underscores(&d);
+	int underscore_count_a_middle = count_middle_underscores(c);
+	int underscore_count_b_middle = count_middle_underscores(d);
+	int underscore_count_a_end = count_end_underscores(c);
+	int underscore_count_b_end = count_end_underscores(d);
 
-	// printf("name: %s, name: %s\n", a->data->name, b->data->name);
-	// printf("underscore_count_a_middle: %d, underscore_count_b_middle: %d\n\n", underscore_count_a_middle, underscore_count_b_middle);
+	char *c_clean = remove_underscore(c);
+	char *d_clean = remove_underscore(d);
+	int status = strcmp(c_clean, d_clean);
+
+	free(c_orig);
+	free(d_orig);
+	free(c_clean);
+	free(d_clean);
 
 	if (status != 0)
 		return status;
@@ -214,90 +206,56 @@ int	diff_str(t_lst *a, t_lst *b) {
 		return (underscore_count_b_middle - underscore_count_a_middle);
 	if (underscore_count_a_end != underscore_count_b_end)
 		return (underscore_count_a_end - underscore_count_b_end);
+
 	return (a->data->i_value - b->data->i_value);
 }
 
-int	reverse_diff_str(t_lst *a, t_lst *b) {
-	if (!a || !a->data)
-		return 0;
-	if (!b || !b->data)
-		return 0;
-	char *c = strdup(a->data->name);
-	char *d = strdup(b->data->name);
-	int underscore_count_a_start = 0;
-	int underscore_count_b_start = 0;
-	int underscore_count_a_middle = 0;
-	int underscore_count_b_middle = 0;
-	int underscore_count_a_end = 0;
-	int underscore_count_b_end = 0;
+int reverse_diff_str(t_lst *a, t_lst *b) {
+	if (!a || !a->data) return 0;
+	if (!b || !b->data) return 0;
 
-	for (int i = 0; c[i]; i++) {
+	char *c_orig = strdup(a->data->name);
+	char *d_orig = strdup(b->data->name);
+	if (!c_orig || !d_orig) {
+		free(c_orig);
+		free(d_orig);
+		return 0;
+	}
+
+	char *c = c_orig;
+	char *d = d_orig;
+
+	for (int i = 0; c[i]; i++)
 		c[i] = tolower(c[i]);
-	}
-
-	// COUNT STARTING UNDERSCORES
-
-	while (c && c[0] == '_') {
-		underscore_count_a_start++;
-		c++;
-	}
-
-	while (d && d[0] == '_') {
-		underscore_count_b_start++;
-		d++;
-	}
-
-	// COUNT ENDING UNDERSCORES
-
-	for (int i = strlen(c) -1; c[i] && c[i] == '_'; i--) {
-		underscore_count_a_end++;
-		c[i] = '\0';
-	}
-
-	for (int i = strlen(d) -1; d[i] && d[i] == '_'; i--) {
-		underscore_count_b_end++;
-		d[i] = '\0';
-	}
-
-	// printf("c: %s, d: %s\n", c, d);
-
-	// COUNT MIDDLE UNDERSCORES
-
-	for (int i = 0; c[i]; i++) {
-		if (c[i] == '_')
-			underscore_count_a_middle++;
-	}
-	for (int i = 0; d[i]; i++) {
-		if (d[i] == '_')
-			underscore_count_b_middle++;
-	}
-
-	// end count
-
-	for (int i = 0; d[i]; i++) {
+	for (int i = 0; d[i]; i++)
 		d[i] = tolower(d[i]);
-	}
 
-	c = remove_underscore(c);
-	d = remove_underscore(d);
-	int status = strcmp(c, d);
-	// if (c)
-	// 	free(c);
-	// if (d)
-	// 	free(d);
+	int underscore_count_a_start = count_start_underscores(&c);
+	int underscore_count_b_start = count_start_underscores(&d);
+	int underscore_count_a_middle = count_middle_underscores(c);
+	int underscore_count_b_middle = count_middle_underscores(d);
+	int underscore_count_a_end = count_end_underscores(c);
+	int underscore_count_b_end = count_end_underscores(d);
 
-	// printf("name: %s, name: %s\n", a->data->name, b->data->name);
-	// printf("underscore_count_a_middle: %d, underscore_count_b_middle: %d\n\n", underscore_count_a_middle, underscore_count_b_middle);
+	char *c_clean = remove_underscore(c);
+	char *d_clean = remove_underscore(d);
+	int status = strcmp(c_clean, d_clean);
+
+	free(c_orig);
+	free(d_orig);
+	free(c_clean);
+	free(d_clean);
 
 	if (status != 0)
-		return status * -1;
+		return -status;
 	if (underscore_count_a_start != underscore_count_b_start)
-		return ((underscore_count_b_start - underscore_count_a_start) * -1);
+		return -(underscore_count_b_start - underscore_count_a_start);
 	if (underscore_count_a_middle != underscore_count_b_middle)
-		return ((underscore_count_b_middle - underscore_count_a_middle) * -1);
+		return -(underscore_count_b_middle - underscore_count_a_middle);
 	if (underscore_count_a_end != underscore_count_b_end)
-		return ((underscore_count_a_end - underscore_count_b_end) * -1);
-	return ((b->data->i_value - a->data->i_value) * -1);
+		return -(underscore_count_a_end - underscore_count_b_end);
+
+	return -(b->data->i_value - a->data->i_value);
 }
 
 void ft_swap(t_lst **a, t_lst **b) {
