@@ -1,6 +1,6 @@
 #include "ft_nm.h"
 
-char	*remove_underscore(char *str) {
+static char	*remove_underscore(char *str) {
 
 	size_t len = 0;
 
@@ -11,6 +11,8 @@ char	*remove_underscore(char *str) {
 	len++;
 
 	char *new_str = malloc(len + 1);
+	if (!new_str)
+		return NULL;
 
 	int y = 0;
 	for (size_t i = 0; str[i]; i++)
@@ -20,12 +22,10 @@ char	*remove_underscore(char *str) {
 	}
 	new_str[y] = '\0';
 
-	// free(str);
 	return new_str;
-
 }
 
-int count_start_underscores(char **str) {
+static int count_start_underscores(char **str) {
 	int count = 0;
 	while (**str == '_') {
 		count++;
@@ -34,7 +34,7 @@ int count_start_underscores(char **str) {
 	return count;
 }
 
-int count_middle_underscores(const char *str) {
+static int count_middle_underscores(const char *str) {
 	int count = 0;
 	for (int i = 0; str[i]; i++) {
 		if (str[i] == '_')
@@ -43,7 +43,7 @@ int count_middle_underscores(const char *str) {
 	return count;
 }
 
-int count_end_underscores(char *str) {
+static int count_end_underscores(char *str) {
 	int count = 0;
 	size_t len = strlen(str);
 
@@ -58,16 +58,16 @@ int diff_str(t_lst *a, t_lst *b) {
 	if (!a || !a->data) return 0;
 	if (!b || !b->data) return 0;
 
-	char *c_orig = strdup(a->data->name);
-	char *d_orig = strdup(b->data->name);
-	if (!c_orig || !d_orig) {
-		free(c_orig);
-		free(d_orig);
+	char *c_poiter = strdup(a->data->name);
+	char *d_poiter = strdup(b->data->name);
+	if (!c_poiter || !d_poiter) {
+		free(c_poiter);
+		free(d_poiter);
 		return 0;
 	}
 
-	char *c = c_orig;
-	char *d = d_orig;
+	char *c = c_poiter;
+	char *d = d_poiter;
 
 	for (int i = 0; c[i]; i++)
 		c[i] = tolower(c[i]);
@@ -83,10 +83,17 @@ int diff_str(t_lst *a, t_lst *b) {
 
 	char *c_clean = remove_underscore(c);
 	char *d_clean = remove_underscore(d);
+	if (!c_clean || !d_clean) {
+		free(c_poiter);
+		free(d_poiter);
+		free(c_clean);
+		free(d_clean);
+		return 0;
+	}
 	int status = strcmp(c_clean, d_clean);
 
-	free(c_orig);
-	free(d_orig);
+	free(c_poiter);
+	free(d_poiter);
 	free(c_clean);
 	free(d_clean);
 
@@ -106,16 +113,16 @@ int reverse_diff_str(t_lst *a, t_lst *b) {
 	if (!a || !a->data) return 0;
 	if (!b || !b->data) return 0;
 
-	char *c_orig = strdup(a->data->name);
-	char *d_orig = strdup(b->data->name);
-	if (!c_orig || !d_orig) {
-		free(c_orig);
-		free(d_orig);
+	char *c_poiter = strdup(a->data->name);
+	char *d_poiter = strdup(b->data->name);
+	if (!c_poiter || !d_poiter) {
+		free(c_poiter);
+		free(d_poiter);
 		return 0;
 	}
 
-	char *c = c_orig;
-	char *d = d_orig;
+	char *c = c_poiter;
+	char *d = d_poiter;
 
 	for (int i = 0; c[i]; i++)
 		c[i] = tolower(c[i]);
@@ -131,10 +138,17 @@ int reverse_diff_str(t_lst *a, t_lst *b) {
 
 	char *c_clean = remove_underscore(c);
 	char *d_clean = remove_underscore(d);
+	if (!c_clean || !d_clean) {
+		free(c_poiter);
+		free(d_poiter);
+		free(c_clean);
+		free(d_clean);
+		return 0;
+	}
 	int status = strcmp(c_clean, d_clean);
 
-	free(c_orig);
-	free(d_orig);
+	free(c_poiter);
+	free(d_poiter);
 	free(c_clean);
 	free(d_clean);
 

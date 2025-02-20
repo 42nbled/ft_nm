@@ -1,18 +1,24 @@
 NAME = ft_nm
 
+SRC_DIR = srcs
 OBJ_DIR = objs
+INC_DIR = header
 
-SRCS =	srcs/main.c \
-		srcs/lst.c \
-		srcs/parse_table_32b.c \
-		srcs/parse_table_64b.c \
-		srcs/sort.c \
-		srcs/test_function.c
+SRCS =	main.c \
+		arg_check.c \
+		lst.c \
+		parse_table_32b.c \
+		parse_table_64b.c \
+		get_symbol_type.c \
+		print_nm.c \
+		sort.c \
+		test_function.c
 
-OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRCS))
+SRCS := $(addprefix $(SRC_DIR)/, $(SRCS))
+OBJS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -Iheader # -g -ggdb #-32m
+CFLAGS = -Wall -Wextra -Werror -I$(INC_DIR) # -g -ggdb #-32m
 
 $(NAME): $(OBJS)
 	@echo "\033[0;34mCompiling $(NAME)...\033[0m"
@@ -21,8 +27,8 @@ $(NAME): $(OBJS)
 
 all: $(NAME)
 
-$(OBJ_DIR)/%.o: %.c
-	@mkdir -p $(@D)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

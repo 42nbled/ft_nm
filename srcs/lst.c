@@ -8,14 +8,26 @@ t_lst *lst_last(t_lst *node)
 	return last;
 }
 
-void	lst_append(t_lst *root, t_name_table *table)
+int lst_append(t_lst *root, t_name_table *table)
 {
-	t_lst *last = lst_last(root);
-	last->next = malloc(sizeof(t_lst));
-	if (!last->next)
-		assert(0 && "TODO: free all and exit");
-	last->next->data = table;
-	last->next->next = NULL;
+    if (!root || !table)
+        return 1;
+
+    t_lst *last = lst_last(root);
+    if (!last)
+        return 1;
+
+    last->next = malloc(sizeof(t_lst));
+    if (!last->next) {
+        free(table->name);
+        free(table);
+        return 1;
+    }
+
+    last->next->data = table;
+    last->next->next = NULL;
+
+    return 0;
 }
 
 void	lst_clear(t_lst *root)

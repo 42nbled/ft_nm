@@ -217,36 +217,33 @@ typedef struct s_flags {
 	unsigned int	p : 1;
 } t_flags;
 
-// LST.C
-t_lst	*lst_last(t_lst *node);
-void	lst_append(t_lst *root, t_name_table *table);
-void	lst_clear(t_lst *root);
-int		lst_size(t_lst *node);
-void	ft_swap(t_lst **a, t_lst **b);
-void	ft_lst_swap(t_lst **header, t_lst *a, t_lst *b);
-void	ft_lst_sort(t_lst **begin_list, int (*cmp)());
+// argc_check.c
+t_files 	*arg_check(t_flags *flags, int argc, char **argv);
 
-// SORT.C
-int		diff_str(t_lst *a, t_lst *b);
-int		reverse_diff_str(t_lst *a, t_lst *b);
+// get_symbol_type.c
+char		get_symbol_type(char *secname, int bind, int type, unsigned long addr, short st_shndx);
 
-// 32
-t_secinfo32	*get_section_headers_32(int fd, t_fileinfo32 file_header);
-t_Elf32_Sym	*read_symtable_32(int fd, t_secinfo32 symh);
-char		*read_strtable_32(int fd, t_secinfo32 strh);
-void		parse_table_32(t_lst *root, t_Elf32_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab, t_secinfo32 *sections);
+// parse_table_32.c
 void		run_32(int fd, t_fileinfo32 fileh, t_lst *root);
 
-// 64
-t_secinfo64	*get_section_headers_64(int fd, t_fileinfo64 file_header);
-t_Elf64_Sym	*read_symtable_64(int fd, t_secinfo64 symh);
-char		*read_strtable_64(int fd, t_secinfo64 strh);
-void		parse_table_64(t_lst *root, t_Elf64_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab, t_secinfo64 *sections);
+// parse_table_64.c
 void		run_64(int fd, t_fileinfo64 fileh, t_lst *root);
 
-char		get_symbol_type(char *secname, int bind, int type, unsigned long addr, short st_shndx);
+// print_nm.c
 void		print_nm32(t_lst name_tables, t_flags flags);
 void		print_nm64(t_lst name_tables, t_flags flags, char *executable_name);
-t_files		*arg_check(t_flags *flags, int argc, char **argv);
+
+// sort.c
+int			diff_str(t_lst *a, t_lst *b);
+int			reverse_diff_str(t_lst *a, t_lst *b);
+
+// lst.c
+t_lst		*lst_last(t_lst *node);
+int			lst_append(t_lst *root, t_name_table *table);
+void		lst_clear(t_lst *root);
+int			lst_size(t_lst *node);
+void		ft_swap(t_lst **a, t_lst **b);
+void		ft_lst_swap(t_lst **header, t_lst *a, t_lst *b);
+void		ft_lst_sort(t_lst **begin_list, int (*cmp)());
 
 #endif
