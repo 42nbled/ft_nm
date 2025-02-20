@@ -7,9 +7,16 @@ static void	main_32(int fd, t_flags flags) {
 
 	read(fd, &file_header, sizeof(t_fileinfo32));
 	for (int i=0; i < file_header.e_shnum; i++)
-		run_32(fd, file_header, &name_tables);
+		if (run_32(fd, file_header, &name_tables)) {
+			close(fd);
+			return;
+		}
 
-	run_32(fd, file_header, &name_tables);
+	if (run_32(fd, file_header, &name_tables)) {
+		close(fd);
+		return;
+	}
+
 	close(fd);
 	print_nm32(name_tables, flags);
 }
@@ -20,9 +27,16 @@ static void	main_64(int fd, t_flags flags, char *executable_name) {
 
 	read(fd, &file_header, sizeof(t_fileinfo64));
 	for (int i=0; i < file_header.e_shnum; i++)
-		run_64(fd, file_header, &name_tables);
+		if (run_64(fd, file_header, &name_tables)) {
+			close(fd);
+			return;
+		};
 
-	run_64(fd, file_header, &name_tables);
+	if (run_64(fd, file_header, &name_tables)) {
+		close(fd);
+		return;
+	};
+
 	close(fd);
 	print_nm64(name_tables, flags, executable_name);
 }

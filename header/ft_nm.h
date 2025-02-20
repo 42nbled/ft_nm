@@ -69,7 +69,6 @@ typedef union s_eident
 
 typedef struct s_fileinfo32
 {
-//	t_eident *e_ident;
 	short	 e_type;
 	short	 e_machine;
 	int		 e_version;
@@ -87,24 +86,6 @@ typedef struct s_fileinfo32
 
 typedef struct s_fileinfo64
 {
-//	union {
-//		unsigned char   e_ident[16];
-//		struct
-//		{
-//			char	EI_MAG0;
-//			char	EI_MAG1;
-//			char	EI_MAG2;
-//			char	EI_MAG3;
-//			char	EI_CLASS;
-//			char	EI_DATA;
-//			char	EI_VERSION;
-//			char	EI_OSABI;
-//			char	EI_ABIVERSION;
-//			char	EI_PAD[7];
-//		};
-//	};
-//	t_eident *e_ident;
-
 	short	e_type;
 	short	e_machine;
 	int		e_version;
@@ -224,10 +205,10 @@ t_files 	*arg_check(t_flags *flags, int argc, char **argv);
 char		get_symbol_type(char *secname, int bind, int type, unsigned long addr, short st_shndx);
 
 // parse_table_32.c
-void		run_32(int fd, t_fileinfo32 fileh, t_lst *root);
+int			run_32(int fd, t_fileinfo32 fileh, t_lst *root);
 
 // parse_table_64.c
-void		run_64(int fd, t_fileinfo64 fileh, t_lst *root);
+int			run_64(int fd, t_fileinfo64 fileh, t_lst *root);
 
 // print_nm.c
 void		print_nm32(t_lst name_tables, t_flags flags);
