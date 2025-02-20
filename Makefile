@@ -2,15 +2,17 @@ NAME = ft_nm
 
 OBJ_DIR = objs
 
-SRCS = main.c \
-		lst.c \
-		parse_table_32b.c \
-		parse_table_64b.c
+SRCS =	srcs/main.c \
+		srcs/lst.c \
+		srcs/parse_table_32b.c \
+		srcs/parse_table_64b.c \
+		srcs/sort.c \
+		srcs/test_function.c
 
 OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror # -g -ggdb #-32m
+CFLAGS = -Wall -Wextra -Werror -Iheader # -g -ggdb #-32m
 
 $(NAME): $(OBJS)
 	@echo "\033[0;34mCompiling $(NAME)...\033[0m"

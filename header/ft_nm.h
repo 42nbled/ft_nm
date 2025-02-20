@@ -217,16 +217,18 @@ typedef struct s_flags {
 	unsigned int	p : 1;
 } t_flags;
 
-// LST.C FUNCTION
+// LST.C
 t_lst	*lst_last(t_lst *node);
 void	lst_append(t_lst *root, t_name_table *table);
 void	lst_clear(t_lst *root);
 int		lst_size(t_lst *node);
-int		diff_str(t_lst *a, t_lst *b);
-int		reverse_diff_str(t_lst *a, t_lst *b);
 void	ft_swap(t_lst **a, t_lst **b);
 void	ft_lst_swap(t_lst **header, t_lst *a, t_lst *b);
 void	ft_lst_sort(t_lst **begin_list, int (*cmp)());
+
+// SORT.C
+int		diff_str(t_lst *a, t_lst *b);
+int		reverse_diff_str(t_lst *a, t_lst *b);
 
 // 32
 t_secinfo32	*get_section_headers_32(int fd, t_fileinfo32 file_header);
