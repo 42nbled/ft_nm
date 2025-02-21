@@ -1,7 +1,6 @@
 #include "ft_nm.h"
 
-t_secinfo64	*get_section_headers_64(int fd, t_fileinfo64 file_header)
-{
+static t_secinfo64	*get_section_headers_64(int fd, t_fileinfo64 file_header) {
 	t_secinfo64	*lst = malloc(sizeof(t_secinfo64) * file_header.e_shnum);
 	if (!lst)
 		return NULL;
@@ -11,8 +10,7 @@ t_secinfo64	*get_section_headers_64(int fd, t_fileinfo64 file_header)
 	return (lst);
 }
 
-t_Elf64_Sym	*read_symtable_64(int fd, t_secinfo64 symh)
-{
+static t_Elf64_Sym	*read_symtable_64(int fd, t_secinfo64 symh) {
 	t_Elf64_Sym	*symtable = malloc(symh.sh_size);
 	if (!symtable)
 		return NULL;
@@ -21,8 +19,7 @@ t_Elf64_Sym	*read_symtable_64(int fd, t_secinfo64 symh)
 	return (symtable);
 }
 
-char	*read_strtable_64(int fd, t_secinfo64 strh)
-{
+static char	*read_strtable_64(int fd, t_secinfo64 strh) {
 	char	*strtable = malloc(strh.sh_size);
 	if (!strtable)
 		return NULL;
@@ -31,10 +28,8 @@ char	*read_strtable_64(int fd, t_secinfo64 strh)
 	return (strtable);
 }
 
-int parse_table_64(t_lst *root, t_Elf64_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab, t_secinfo64 *sections)
-{
-	for (size_t i = 1; i < size; i++)
-	{
+static int parse_table_64(t_lst *root, t_Elf64_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab, t_secinfo64 *sections) {
+	for (size_t i = 1; i < size; i++) {
 		t_name_table *t = malloc(sizeof(t_name_table));
 		if (!t)
 			return 1;
@@ -62,8 +57,7 @@ int parse_table_64(t_lst *root, t_Elf64_Sym *symbol_table, char *stringtable, si
 }
 
 
-int run_64(int fd, t_fileinfo64 fileh, t_lst *root)
-{
+int run_64(int fd, t_fileinfo64 fileh, t_lst *root) {
 	static char     *names[1024] = {0};
 	static size_t   inames = 0;
 	static size_t   i = 0;
@@ -80,15 +74,12 @@ int run_64(int fd, t_fileinfo64 fileh, t_lst *root)
 		free(sections);
 		return 1;
 	}
-	if (i < (size_t)fileh.e_shnum)
-	{
+	if (i < (size_t)fileh.e_shnum) {
 		t_secinfo64 section = sections[i];
-		if (section.sh_type == SHT_SYMTAB)
-		{
+		if (section.sh_type == SHT_SYMTAB) {
 			t_Elf64_Sym *symtable = read_symtable_64(fd, section);
 			char        *strtable = read_strtable_64(fd, sections[section.sh_link]);
-			if (!symtable || !strtable || parse_table_64(root, symtable, strtable, section.sh_size / sizeof(t_Elf64_Sym), strtab, sections))
-			{
+			if (!symtable || !strtable || parse_table_64(root, symtable, strtable, section.sh_size / sizeof(t_Elf64_Sym), strtab, sections)) {
 				free(sections);
 				free(strtab);
 				free(symtable);
@@ -103,8 +94,7 @@ int run_64(int fd, t_fileinfo64 fileh, t_lst *root)
 		}
 		i++;
 	}
-	else if (i == (size_t)fileh.e_shnum)
-	{
+	else if (i == (size_t)fileh.e_shnum) {
 		free(strtab);
 		free(sections);
 		for (size_t j = 0; j < inames; j++)

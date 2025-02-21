@@ -1,6 +1,5 @@
 #include "ft_nm.h"
 
-
 static void	main_32(int fd, t_flags flags) {
 	t_fileinfo32	file_header;
 	t_lst			name_tables = {.next=NULL, .data=NULL};

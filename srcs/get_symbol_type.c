@@ -19,7 +19,6 @@ char get_symbol_type(char *secname, int bind, int type, unsigned long addr, shor
 		".note.ABI-tag\0r\0"
 		".interp\0r\0";
 
-	// Handle weak symbols
 	if (bind == STB_WEAK) {
 		if (type == STT_FUNC || type == STT_NOTYPE) {
 			return (addr != 0) ? 'W' : 'w';
@@ -27,8 +26,6 @@ char get_symbol_type(char *secname, int bind, int type, unsigned long addr, shor
 			return (addr != 0) ? 'V' : 'v';
 		}
 	}
-
-	// Default to undefined
 	char symbol_type = 'U';
 
 	if (secname && *secname) {
@@ -44,7 +41,6 @@ char get_symbol_type(char *secname, int bind, int type, unsigned long addr, shor
 	if (st_shndx < 0)
 		symbol_type = 'a';
 
-	// Handle global and local bindings
 	if (bind == STB_GLOBAL) {
 		return toupper(symbol_type);
 	} else if (bind == STB_LOCAL) {

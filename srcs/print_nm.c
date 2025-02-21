@@ -10,8 +10,7 @@ void print_nm32(t_lst name_tables, t_flags flags) {
 				ft_lst_sort(lst, diff_str);
 		}
 		for (t_lst *l = *lst; l != NULL; l = l->next) {
-			if (l->data->type == 'a')
-			{
+			if (l->data->type == 'a') {
 				if (flags.a && !flags.g && !flags.u)
 					printf("%s %c %s\n", l->data->value, l->data->type, l->data->name);
 			}
@@ -38,8 +37,7 @@ void print_nm64(t_lst name_tables, t_flags flags, char *executable_name) {
 		for (t_lst *l = *lst; l != NULL; l = l->next) {
 			if ((flags.g || flags.u) && l->data->name[0] == '.')
 				continue ;
-			if (l->data->stt_type == STT_SECTION)
-			{
+			if (l->data->stt_type == STT_SECTION) {
 				if (flags.a)
 					printf("%s %c %s\n", l->data->value, l->data->type, l->data->name);
 				continue ;
@@ -47,8 +45,7 @@ void print_nm64(t_lst name_tables, t_flags flags, char *executable_name) {
 			if (l->data->name[0] == '\0' && l->data->type != 'a' && !strcmp(l->data->value, "0000000000000000"))
 				continue;
 
-			if (l->data->type == 'a')
-			{
+			if (l->data->type == 'a') {
 				if (flags.a && !flags.g && !flags.u)
 					printf("%s %c %s\n", l->data->value, l->data->type, l->data->name);
 			}
@@ -60,8 +57,7 @@ void print_nm64(t_lst name_tables, t_flags flags, char *executable_name) {
 				printf("%s %c %s\n", l->data->value, l->data->type, l->data->name);
 		}
 	}
-	else {
+	else
 		printf("ft_nm: %s no symbols\n", executable_name);
-	}
 	lst_clear(*lst);
 }

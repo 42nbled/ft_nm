@@ -1,15 +1,13 @@
 #include "ft_nm.h"
 
-t_lst *lst_last(t_lst *node)
-{
+t_lst *lst_last(t_lst *node) {
 	t_lst	*last = node;
 	while (last && last->next)
 		last = last->next;
 	return last;
 }
 
-int lst_append(t_lst *root, t_name_table *table)
-{
+int lst_append(t_lst *root, t_name_table *table) {
     if (!root || !table)
         return 1;
 
@@ -30,12 +28,10 @@ int lst_append(t_lst *root, t_name_table *table)
     return 0;
 }
 
-void	lst_clear(t_lst *root)
-{
+void	lst_clear(t_lst *root) {
 	t_lst	*ptr = root;
 	t_lst	*tmp;
-	while (ptr)
-	{
+	while (ptr) {
 		tmp = ptr->next;
 		free(ptr->data->name);
 		free(ptr->data);
@@ -44,8 +40,7 @@ void	lst_clear(t_lst *root)
 	}
 }
 
-int	lst_size(t_lst *node)
-{
+int	lst_size(t_lst *node) {
 	if (node->next)
 		return (lst_size(node->next) + 1);
 	return (1);
@@ -88,15 +83,12 @@ void	ft_lst_sort(t_lst **begin_list, int (*cmp)())
 	t_lst *d;
 	a = *begin_list;
 
-	while (a && a->next)
-	{
+	while (a && a->next) {
 		b = a->next;
 		c = a;
-		while (b)
-		{
-			if (cmp(c, b) > 0) {
+		while (b) {
+			if (cmp(c, b) > 0)
 				c = b;
-			}
 			b = b->next;
 		}
 		d = a->next;

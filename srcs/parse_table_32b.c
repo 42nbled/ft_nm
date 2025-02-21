@@ -1,7 +1,6 @@
 #include "ft_nm.h"
 
-t_secinfo32	*get_section_headers_32(int fd, t_fileinfo32 file_header)
-{
+static t_secinfo32	*get_section_headers_32(int fd, t_fileinfo32 file_header) {
 	t_secinfo32	*lst = malloc(sizeof(t_secinfo32) * file_header.e_shnum);
 	if (!lst)
 		return NULL;
@@ -11,8 +10,7 @@ t_secinfo32	*get_section_headers_32(int fd, t_fileinfo32 file_header)
 	return (lst);
 }
 
-t_Elf32_Sym	*read_symtable_32(int fd, t_secinfo32 symh)
-{
+static t_Elf32_Sym	*read_symtable_32(int fd, t_secinfo32 symh) {
 	t_Elf32_Sym	*symtable = malloc(symh.sh_size);
 	if (!symtable)
 		return NULL;
@@ -21,8 +19,7 @@ t_Elf32_Sym	*read_symtable_32(int fd, t_secinfo32 symh)
 	return (symtable);
 }
 
-char	*read_strtable_32(int fd, t_secinfo32 strh)
-{
+static char	*read_strtable_32(int fd, t_secinfo32 strh) {
 	char	*strtable = malloc(strh.sh_size);
 	if (!strtable)
 		return NULL;
@@ -31,10 +28,8 @@ char	*read_strtable_32(int fd, t_secinfo32 strh)
 	return (strtable);
 }
 
-int parse_table_32(t_lst *root, t_Elf32_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab, t_secinfo32 *sections)
-{
-	for (size_t i = 1; i < size; i++)
-	{
+static int parse_table_32(t_lst *root, t_Elf32_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab, t_secinfo32 *sections) {
+	for (size_t i = 1; i < size; i++) {
 		t_name_table *t = malloc(sizeof(t_name_table));
 		if (!t)
 			return 1;
@@ -57,8 +52,7 @@ int parse_table_32(t_lst *root, t_Elf32_Sym *symbol_table, char *stringtable, si
 	return 0;
 }
 
-int run_32(int fd, t_fileinfo32 fileh, t_lst *root)
-{
+int run_32(int fd, t_fileinfo32 fileh, t_lst *root) {
 	static char     *names[1024] = {0};
 	static size_t   inames = 0;
 	static size_t   i = 0;
@@ -75,15 +69,12 @@ int run_32(int fd, t_fileinfo32 fileh, t_lst *root)
 		free(sections);
 		return 1;
 	}
-	if (i < (size_t)fileh.e_shnum)
-	{
+	if (i < (size_t)fileh.e_shnum) {
 		t_secinfo32 section = sections[i];
-		if (section.sh_type == SHT_SYMTAB)
-		{
+		if (section.sh_type == SHT_SYMTAB) {
 			t_Elf32_Sym *symtable = read_symtable_32(fd, section);
 			char        *strtable = read_strtable_32(fd, sections[section.sh_link]);
-			if (!symtable || !strtable || parse_table_32(root, symtable, strtable, section.sh_size / sizeof(t_Elf32_Sym), strtab, sections))
-			{
+			if (!symtable || !strtable || parse_table_32(root, symtable, strtable, section.sh_size / sizeof(t_Elf32_Sym), strtab, sections)) {
 				free(sections);
 				free(strtab);
 				free(symtable);
@@ -98,8 +89,7 @@ int run_32(int fd, t_fileinfo32 fileh, t_lst *root)
 		}
 		i++;
 	}
-	else if (i == (size_t)fileh.e_shnum)
-	{
+	else if (i == (size_t)fileh.e_shnum) {
 		free(strtab);
 		free(sections);
 		for (size_t j = 0; j < inames; j++)

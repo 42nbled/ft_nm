@@ -1,7 +1,6 @@
 #include "ft_nm.h"
 
 static char	*remove_underscore(char *str) {
-
 	size_t len = 0;
 
 	for (int i = 0; str[i]; i++) {
@@ -15,8 +14,7 @@ static char	*remove_underscore(char *str) {
 		return NULL;
 
 	int y = 0;
-	for (size_t i = 0; str[i]; i++)
-	{
+	for (size_t i = 0; str[i]; i++) {
 		if (str[i] != '_' && str[i] != '@' && str[i] != '.')
 			new_str[y++] = str[i];
 	}

@@ -32,7 +32,6 @@ void	_test_function_() {
 	return;
 }
 
-
 void	__testfunction() {
 	return;
 }
