@@ -74,10 +74,10 @@ int diff_str(t_lst *a, t_lst *b) {
 
 	int underscore_count_a_start = count_start_underscores(&c);
 	int underscore_count_b_start = count_start_underscores(&d);
-	int underscore_count_a_middle = count_middle_underscores(c);
-	int underscore_count_b_middle = count_middle_underscores(d);
 	int underscore_count_a_end = count_end_underscores(c);
 	int underscore_count_b_end = count_end_underscores(d);
+	int underscore_count_a_middle = count_middle_underscores(c);
+	int underscore_count_b_middle = count_middle_underscores(d);
 
 	char *c_clean = remove_underscore(c);
 	char *d_clean = remove_underscore(d);
@@ -129,10 +129,10 @@ int reverse_diff_str(t_lst *a, t_lst *b) {
 
 	int underscore_count_a_start = count_start_underscores(&c);
 	int underscore_count_b_start = count_start_underscores(&d);
-	int underscore_count_a_middle = count_middle_underscores(c);
-	int underscore_count_b_middle = count_middle_underscores(d);
 	int underscore_count_a_end = count_end_underscores(c);
 	int underscore_count_b_end = count_end_underscores(d);
+	int underscore_count_a_middle = count_middle_underscores(c);
+	int underscore_count_b_middle = count_middle_underscores(d);
 
 	char *c_clean = remove_underscore(c);
 	char *d_clean = remove_underscore(d);
