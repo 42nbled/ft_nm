@@ -1,9 +1,9 @@
 #!/bin/bash
 function run_diff_test {
-    ./ft_nm $EXECUTABLE $1 > result_ft_nm.txt
-    nm $EXECUTABLE $1 > result_nm.txt
+    ./ft_nm $EXECUTABLE $1 >result_ft_nm.txt 2>/dev/null
+    nm $EXECUTABLE $1 >result_nm.txt 2>/dev/null
     echo -n "$1 : "
-    diff result_ft_nm.txt result_nm.txt 2>&1 >/dev/null && echo -ne "\033[32m[OK]\033[0m " || echo -ne "\033[31m[KO]\033[0m "
+    diff result_ft_nm.txt result_nm.txt >/dev/null 2>&1 && echo -ne "\033[32m[OK]\033[0m " || echo -ne "\033[31m[KO]\033[0m "
     rm result_ft_nm.txt result_nm.txt
 }
 

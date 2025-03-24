@@ -28,6 +28,7 @@ static char	*read_strtable_64(int fd, t_secinfo64 strh) {
 	return (strtable);
 }
 
+
 static int parse_table_64(t_lst *root, t_Elf64_Sym *symbol_table, char *stringtable, size_t size, char *shstrtab, t_secinfo64 *sections) {
 	for (size_t i = 1; i < size; i++) {
 		t_name_table *t = malloc(sizeof(t_name_table));
@@ -58,11 +59,11 @@ static int parse_table_64(t_lst *root, t_Elf64_Sym *symbol_table, char *stringta
 
 
 int run_64(int fd, t_fileinfo64 fileh, t_lst *root) {
-	static char     *names[1024] = {0};
-	static size_t   inames = 0;
-	static size_t   i = 0;
-	static char     *strtab = NULL;
-	static t_secinfo64 *sections = NULL;
+	static char    		*names[1024] = {0};
+	static size_t  		inames = 0;
+	static size_t  		i = 0;
+	static char    		*strtab = NULL;
+	static t_secinfo64	*sections = NULL;
 
 	if (!sections)
 		sections = get_section_headers_64(fd, fileh);
@@ -74,6 +75,8 @@ int run_64(int fd, t_fileinfo64 fileh, t_lst *root) {
 		free(sections);
 		return 1;
 	}
+
+
 	if (i < (size_t)fileh.e_shnum) {
 		t_secinfo64 section = sections[i];
 		if (section.sh_type == SHT_SYMTAB) {

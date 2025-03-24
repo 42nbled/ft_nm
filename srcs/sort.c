@@ -23,6 +23,15 @@ static char	*remove_underscore(char *str) {
 	return new_str;
 }
 
+static int count_start_points(char **str) {
+	int count = 0;
+	while (**str == '.') {
+		count++;
+		(*str)++;
+	}
+	return count;
+}
+
 static int count_start_underscores(char **str) {
 	int count = 0;
 	while (**str == '_') {
@@ -72,6 +81,8 @@ int diff_str(t_lst *a, t_lst *b) {
 	for (int i = 0; d[i]; i++)
 		d[i] = tolower(d[i]);
 
+	int point_count_a_start = count_start_points(&c);
+	int point_count_b_start = count_start_points(&d);
 	int underscore_count_a_start = count_start_underscores(&c);
 	int underscore_count_b_start = count_start_underscores(&d);
 	int underscore_count_a_end = count_end_underscores(c);
@@ -97,13 +108,14 @@ int diff_str(t_lst *a, t_lst *b) {
 
 	if (status != 0)
 		return status;
+	if (point_count_a_start != point_count_b_start)
+		return (point_count_b_start - point_count_a_start);
 	if (underscore_count_a_start != underscore_count_b_start)
 		return (underscore_count_b_start - underscore_count_a_start);
 	if (underscore_count_a_middle != underscore_count_b_middle)
 		return (underscore_count_b_middle - underscore_count_a_middle);
 	if (underscore_count_a_end != underscore_count_b_end)
 		return (underscore_count_a_end - underscore_count_b_end);
-
 	return (a->data->i_value - b->data->i_value);
 }
 
@@ -127,6 +139,8 @@ int reverse_diff_str(t_lst *a, t_lst *b) {
 	for (int i = 0; d[i]; i++)
 		d[i] = tolower(d[i]);
 
+	int point_count_a_start = count_start_points(&c);
+	int point_count_b_start = count_start_points(&d);
 	int underscore_count_a_start = count_start_underscores(&c);
 	int underscore_count_b_start = count_start_underscores(&d);
 	int underscore_count_a_end = count_end_underscores(c);
@@ -152,6 +166,8 @@ int reverse_diff_str(t_lst *a, t_lst *b) {
 
 	if (status != 0)
 		return -status;
+	if (point_count_a_start != point_count_b_start)
+		return (point_count_a_start - point_count_b_start);
 	if (underscore_count_a_start != underscore_count_b_start)
 		return -(underscore_count_b_start - underscore_count_a_start);
 	if (underscore_count_a_middle != underscore_count_b_middle)

@@ -33,7 +33,11 @@ static int parse_table_32(t_lst *root, t_Elf32_Sym *symbol_table, char *stringta
 		t_name_table *t = malloc(sizeof(t_name_table));
 		if (!t)
 			return 1;
-		t->name = strdup(&stringtable[symbol_table[i].st_name]);
+		t->stt_type = ELF32_ST_TYPE(symbol_table[i].st_info);
+		if (t->stt_type == STT_SECTION)
+			t->name = strdup(&shstrtab[sections[symbol_table[i].st_shndx].sh_name]);
+		else
+			t->name = strdup(&stringtable[symbol_table[i].st_name]);
 		if (!t->name) {
 			free(t);
 			return 1;

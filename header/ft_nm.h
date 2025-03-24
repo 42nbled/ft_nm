@@ -9,6 +9,35 @@
 #include <strings.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/stat.h>
+
+#define	PT_NULL		0
+#define PT_LOAD		1
+#define PT_DYNAMIC	2
+#define PT_INTERP	3
+#define PT_NOTE		4
+#define PT_SHLIB	5
+#define PT_PHDR		6
+#define PT_TLS		7
+#define	PT_NUM		8
+#define PT_LOOS		0x60000000
+#define PT_GNU_EH_FRAME	0x6474e550
+#define PT_GNU_STACK	0x6474e551
+#define PT_GNU_RELRO	0x6474e552
+#define PT_GNU_PROPERTY	0x6474e553
+#define PT_LOSUNW	0x6ffffffa
+#define PT_SUNWBSS	0x6ffffffa
+#define PT_SUNWSTACK	0x6ffffffb
+#define PT_HISUNW	0x6fffffff
+#define PT_HIOS		0x6fffffff
+#define PT_LOPROC	0x70000000
+#define PT_HIPROC	0x7fffffff
+
+#define PF_X		(1 << 0)
+#define PF_W		(1 << 1)
+#define PF_R		(1 << 2)
+#define PF_MASKOS	0x0ff00000
+#define PF_MASKPROC	0xf0000000
 
 # define	STB_LOCAL	0
 # define	STB_GLOBAL	1
@@ -48,6 +77,9 @@
 #define ELF64_ST_BIND(i)   ((i)>>4)
 #define ELF64_ST_TYPE(i)   ((i)&0xf)
 #define ELF64_ST_INFO(b,t) (((b)<<4)+((t)&0xf))
+
+
+
 
 typedef union s_eident
 {
@@ -211,7 +243,7 @@ int			run_32(int fd, t_fileinfo32 fileh, t_lst *root);
 int			run_64(int fd, t_fileinfo64 fileh, t_lst *root);
 
 // print_nm.c
-void		print_nm32(t_lst name_tables, t_flags flags);
+void		print_nm32(t_lst name_tables, t_flags flags, char *executable_name);
 void		print_nm64(t_lst name_tables, t_flags flags, char *executable_name);
 
 // sort.c
